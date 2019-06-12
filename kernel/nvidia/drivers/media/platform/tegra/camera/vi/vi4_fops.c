@@ -946,11 +946,17 @@ static int vi4_channel_start_streaming(struct vb2_queue *vq, u32 count)
 	struct sensor_mode_properties *sensor_mode;
 	struct camera_common_data *s_data;
 	unsigned int emb_buf_size = 0;
+	char *name = chan->subdev_on_csi->name;
+
+
+	dev_err(&chan->video.dev,"In channel start streamig\n");
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 9, 0)
 	ret = media_entity_pipeline_start(&chan->video.entity, pipe);
 	if (ret < 0)
 		goto error_pipeline_start;
+
+	dev_err(&chan->video.dev,"After media_entity_pipeline_start\n");
 #endif
 
 	if (chan->bypass) {
@@ -964,17 +970,31 @@ static int vi4_channel_start_streaming(struct vb2_queue *vq, u32 count)
 		return ret;
 	}
 
+	dev_err(&chan->video.dev,"befor vi4 init\n");
+
 	vi4_init(chan);
+
+	dev_err(&chan->video.dev,"After vi4 init\n");
 
 	spin_lock_irqsave(&chan->capture_state_lock, flags);
 	chan->capture_state = CAPTURE_IDLE;
 	spin_unlock_irqrestore(&chan->capture_state_lock, flags);
+
+	if(!strncmp("tc358840", name, 8))
+		goto no_camera_data;
 
 	if (!chan->pg_mode) {
 		sd = chan->subdev_on_csi;
 		node = sd->dev->of_node;
 		s_data = to_camera_common_data(sd->dev);
 
+		if (s_data == NULL) {
+			dev_err(&chan->video.dev,
+				"Camera common data missing!\n");
+			return -EINVAL;
+		}
+
+		dev_err(&chan->video.dev,"Befor get proporties from DT\n");
 		/* get sensor properties from DT */
 		if (s_data != NULL && node != NULL) {
 			int idx = s_data->mode_prop_idx;
@@ -997,6 +1017,8 @@ static int vi4_channel_start_streaming(struct vb2_queue *vq, u32 count)
 						PAGE_SIZE);
 			}
 		}
+
+		dev_err(&chan->video.dev,"Befor get proporties from DT\n");
 
 		/* Allocate buffer for Embedded Data if need to*/
 		if (emb_buf_size > chan->vi->emb_buf_size) {
@@ -1023,8 +1045,10 @@ static int vi4_channel_start_streaming(struct vb2_queue *vq, u32 count)
 			}
 			chan->vi->emb_buf_size = emb_buf_size;
 		}
+		dev_err(&chan->video.dev,"After allocate buffer\n");
 	}
 
+no_camera_data:
 	for (i = 0; i < chan->valid_ports; i++) {
 		ret = tegra_channel_capture_setup(chan, i);
 		if (ret < 0)

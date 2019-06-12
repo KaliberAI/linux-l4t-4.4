@@ -9,7 +9,7 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
-
+#define DEBUG
 #include <linux/clk.h>
 #include <linux/device.h>
 #include <linux/gpio/consumer.h>
@@ -395,18 +395,23 @@ static int tegra_csi_s_stream(struct v4l2_subdev *subdev, int enable)
 				if (!tegra_chan->bypass && !tegra_chan->pg_mode)
 					deskew_setup(chan,
 						tegra_chan->deskew_ctx);
-		} else
+		} else{
+			dev_dbg(csi->dev, "%s normal port=%d\n",__func__, i);
 			tegra_csi_stop_streaming(chan, i);
+		}
 	}
 	atomic_set(&chan->is_streaming, enable);
 	return ret;
 start_fail:
+	dev_dbg(csi->dev,"start_fail update_video_source");
 	update_video_source(csi, 0, chan->pg_mode);
 	/* Reverse sequence to stop streaming on all valid_ports
 	 * i is the current failing port, need to stop ports 0 ~ (i-1)
 	 */
-	for (i = i - 1; i >= 0; i--)
+	for (i = i - 1; i >= 0; i--) {
+		dev_dbg(csi->dev, "%s start_fail port=%d\n",__func__, i);
 		tegra_csi_stop_streaming(chan, i);
+	}
 	return ret;
 }
 

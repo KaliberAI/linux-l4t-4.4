@@ -9,6 +9,7 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
+#define DEBUG
 #include <linux/clk/tegra.h>
 #include <linux/of_graph.h>
 #include <linux/string.h>
@@ -137,7 +138,7 @@ static void csi4_phy_config(
 
 	/* read current NVCSI_CIL_CONFIG setting */
 	cil_config = csi4_phy_read(chan, phy_num, NVCSI_CIL_CONFIG);
-	dev_dbg(csi->dev, "NVCSI_CIL_CONFIG = %08x\n", cil_config);
+	dev_dbg(csi->dev, "Before NVCSI_CIL_CONFIG = %08x\n", cil_config);
 
 	if (cil_a) {
 		/* soft reset for data lane */
@@ -187,6 +188,10 @@ static void csi4_phy_config(
 			csi4_phy_write(chan, phy_num,
 				NVCSI_CIL_PAD_CONFIG, PDVCLAMP);
 	}
+
+	/* read current NVCSI_CIL_CONFIG setting */
+	cil_config = csi4_phy_read(chan, phy_num, NVCSI_CIL_CONFIG);
+	dev_dbg(csi->dev, "After NVCSI_CIL_CONFIG = %08x\n", cil_config);
 
 	if (!enable)
 		return;

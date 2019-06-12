@@ -1749,13 +1749,19 @@ int tegra_channel_init_subdevices(struct tegra_channel *chan)
 		return ret;
 	}
 
+	if(!strncmp("tc358840", sd->name, 8))
+		goto no_camera_data;
+
 	ret = tegra_channel_sensorprops_setup(chan);
 	if (ret < 0) {
 		dev_err(chan->vi->dev, "%s: failed to setup sensor props\n",
 			__func__);
 		goto fail;
 	}
+	
+	dev_err(sd->dev, "before connect sensor or channel");
 
+no_camera_data:
 	/* Add a link for the camera_common_data in the tegra_csi_channel. */
 	ret = tegra_channel_connect_sensor(chan, chan->subdev_on_csi);
 	if (ret < 0) {

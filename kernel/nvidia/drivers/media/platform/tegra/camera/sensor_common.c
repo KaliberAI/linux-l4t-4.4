@@ -706,12 +706,17 @@ int sensor_common_init_sensor_properties(
 	int num_modes = 0;
 	int err, i;
 
+
+	dev_err(dev, "In sensor properties init\n");
+
 	if (sensor == NULL)
 		return -EINVAL;
 
 	err = sensor_common_init_device_config(dev, np, &sensor->cfg);
 	if (err)
 		return err;
+
+	dev_err(dev, "Not nULL\n");
 
 	/* get number of modes */
 	for (i = 0; num_modes < MAX_NUM_SENSOR_MODES; i++) {
