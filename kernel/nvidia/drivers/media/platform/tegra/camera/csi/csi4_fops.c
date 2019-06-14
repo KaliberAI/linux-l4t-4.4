@@ -677,7 +677,7 @@ static int csi4_mipi_cal(struct tegra_csi_channel *chan)
 				NVCSI_CIL_B_SW_RESET,
 				SW_RESET1_EN | SW_RESET0_EN);
 		}
-		num_ports++;
+		num_ports++;g
 	}
 	if (!lanes) {
 		dev_err(csi->dev, "Selected no CSI lane, cannot do calibration");
